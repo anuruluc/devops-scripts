@@ -1,22 +1,18 @@
 import os
 import sys
 import logging
+import json
 
-# Define the logger
 logger = logging.getLogger(__name__)
 
 def get_project_root() -> str:
-    """Returns project root directory"""
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def get_config_file_path(file_name: str) -> str:
-    """Returns the full path to the given config file"""
     project_root = get_project_root()
     return os.path.join(project_root, 'config', file_name)
 
 def load_config(file_name: str) -> dict:
-    """Loads the given config file and returns its contents as a dictionary"""
-    import json
     file_path = get_config_file_path(file_name)
     try:
         with open(file_path, 'r') as file:
@@ -28,9 +24,20 @@ def load_config(file_name: str) -> dict:
         logger.error(f"Failed to parse config file '{file_name}': {e}")
         sys.exit(1)
 
-def setup_logging(log_level: str = 'INFO') -> None:
-    """Sets up the logging configuration"""
+def setup_logging(log_level: str = 'INFO', log_file: str = None) -> None:
+    log_format = '%(asctime)s [%(levelname)s] %(message)s'
+    log_level = getattr(logging, log_level.upper())
+    
+    if log_file:
+        handlers = [
+            logging.FileHandler(log_file),
+            logging.StreamHandler()
+        ]
+    else:
+        handlers = [logging.StreamHandler()]
+    
     logging.basicConfig(
-        format='%(asctime)s [%(levelname)s] %(message)s',
-        level=getattr(logging, log_level.upper())
+        format=log_format,
+        level=log_level,
+        handlers=handlers
     )
